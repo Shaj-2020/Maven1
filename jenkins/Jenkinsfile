@@ -1,30 +1,16 @@
-pipeline {
-    agent {
-        docker {
-            image 'maven:3-alpine'
-            args '-v /root/.m2:/root/.m2'
-        }
+node('master') 
+{
+    stage('ContinuousDownload_loans')
+    {
+    git 'https://github.com/Shaj-2020/Maven1.git'
     }
-    stages {
-        stage('Build') {
-            steps {
-                sh 'mvn -B -DskipTests clean package'
-            }
-        }
-        stage('Test') {
-            steps {
-                sh 'mvn test'
-            }
-            post {
-                always {
-                    junit 'target/surefire-reports/*.xml'
-                }
-            }
-        }
-        stage('Deliver') {
-            steps {
-                sh './jenkins/scripts/deliver.sh'
-            }
-        }
+    
+    stage('ContinuousBuild_loans')
+    {
+        sh label: '', script: 'mvn package'
     }
-}
+    stage('ContinuousDeployment_loans')
+    {
+        sh label: '', script: 'scp /root/.jenkins/workspace/ScriptedPipeline/memoryref/target/memoryref.jar ec2-user@3.86.219.4:/var/lib/tomcat/webapps/qaapp.jar'
+    }
+    }
